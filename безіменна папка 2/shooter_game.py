@@ -17,7 +17,7 @@ points = 0
 
 
 window = display.set_mode((WIDTH, HEIGHT))
-display.set_caption("Лабіринт")
+display.set_caption("Aboba")
 
 class GameSprite(sprite.Sprite):
     def __init__(self,sprite_image, x, y, width, height):
@@ -34,12 +34,18 @@ class GameSprite(sprite.Sprite):
 
 class Player(GameSprite):
     def update(self):
-        old_pos = self.rect.x, self.rect.y
+       
         pressed = key.get_pressed()
         if pressed[K_LEFT] and self.rect.x > 0:
             self.rect.x -= 3
         if pressed[K_RIGHT] and self.rect.x < WIDTH - 70:            
             self.rect.x += 3
+
+        if pressed[K_UP] and self.rect.y > 0:            
+            self.rect.y -= 3
+
+        if pressed[K_DOWN] and self.rect.y < HEIGHT - 70:            
+            self.rect.y += 3
 
     def fire(self):
         """Постріл кулею"""
@@ -49,7 +55,7 @@ class Player(GameSprite):
 
 class Asteroid(GameSprite):
     def __init__(self, x, y, speed):
-        super().__init__("asteroid.png", x, y, 60, 60)
+        super().__init__("pngegg копія.png", x, y, 60, 60)
         self.speed = speed
 
     def update(self):
@@ -99,12 +105,13 @@ class Bullet(GameSprite):
 
 
 player = Player("pngegg.png",x=WIDTH/2-50, y=HEIGHT-200, width=100, height =100)
-bg = transform.scale(image.load("infinite_starts.jpg"), (WIDTH, HEIGHT))
-bg2 = transform.scale(image.load("infinite_starts.jpg"), (WIDTH, HEIGHT))
+bg = transform.scale(image.load("space.png"), (WIDTH, HEIGHT))
+bg2 = transform.scale(image.load("space.png"), (WIDTH, HEIGHT))
 bg_y1, bg_y2 = 0,-HEIGHT
 
 bullets = sprite.Group()
 monsters = sprite.Group()
+bonus = sprite.Group()
 for i in range(5):
     new_enemy = Enemy(x=randint(0, WIDTH - 80),
                      y = randint(-500, -150),speed = randint(3,6))
@@ -177,7 +184,11 @@ while run:
             collide.rect.x = randint(0, WIDTH -80)
             collide.rect.y = randint(-500, -150)
             collide.speed = randint(3,6)
+            namm = randint(1,5)
+            #if namm == 1:
+                #bonus.add(GameSprite ("beams2.png", colide rect x, y))
         if points > 10:
+
             finish = True
             result_text = font2.render("ПРЕМОГА!",True,(230, 145, 12))
     else:
