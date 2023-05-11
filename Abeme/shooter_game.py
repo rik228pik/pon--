@@ -10,8 +10,8 @@ FPS = 60
 lost = 0
 points = 0
 
-#mixer.init()
-#mixer.music.load('space.ogg')
+#mixer.__init__()
+#mixer.music.load('лазер.ogg')
 #mixer.music.set_volume(0.0)
 #mixer.music.play()
 
@@ -104,10 +104,27 @@ class Enemy(GameSprite):
             self.rect.y = randint(-500, -150)
             self.speed = randint(3,6)
 
+class BOSS(GameSprite):
+    def __init__(self, x, y, speed):
+        super().__init__("boss.png", x, y, 150, 100)
+        self.speed = speed
+
+        self.hp = 5
+
+
+    def update(self):
+        """рух ворога"""
+       
+        self.rect.x += self.speed
+        if self.rect.right > WIDTH or self.rect.x < 0:
+
+           self.speed = self.speed * -1
+
 
 class Bullet(GameSprite):
     def __init__(self, x, y):
         super().__init__("beams2.png", x, y, 30,35)
+        self.rect.centerx = x
         self.speed = 4
 
     def update(self):
@@ -118,6 +135,7 @@ class Bullet(GameSprite):
 
 
 player = Player("pngegg.png",x=WIDTH/2-50, y=HEIGHT-200, width=100, height =100)
+boss = BOSS(x=WIDTH/2-50, y=100, speed=10)
 bg = transform.scale(image.load("space.png"), (WIDTH, HEIGHT))
 bg2 = transform.scale(image.load("space.png"), (WIDTH, HEIGHT))
 bg_y1, bg_y2 = 0,-HEIGHT
@@ -133,6 +151,7 @@ for i in range(5):
 font1 = font.SysFont("Arial", 25)
 lost_text = font1.render("Пропущено" + str(lost), True,(255,255,255))
 points_text = font1.render("Рахунок" + str(points), True,(255,255,255))
+hp_text = font1.render("Життя:" + str(player.hp),True,(255,255,255))
 
 font2 = font.SysFont("Arial", 50)
 result_text = font2.render("БОТ!",True,(230, 145, 12))
@@ -143,7 +162,7 @@ run = True
 finish = False
 clock = time.Clock()
 
-while run:
+while run:                  # ігровий цикил
     for e in event.get():
         if e.type == QUIT:
             run = False
@@ -173,6 +192,7 @@ while run:
             bg_y2  = -HEIGHT
         player.draw()
         player.update()
+        
         monsters.draw(window)
         monsters.update()
         bullets.draw(window)
@@ -183,23 +203,30 @@ while run:
         bonus.update()
         window.blit(lost_text, (20,20))
         window.blit(points_text, (20,50))
+        window.blit(hp_text, (WIDTH-100,20))
 
         sprite_list = sprite.spritecollide(player, monsters, True, sprite.collide_mask)
         for colide in sprite_list:
             if player.hp > 0:
-           # finish = True
+               finish = True
+            else:
+                player.hp -= 1
+                hp_text = font1.render("Життя:" + str(player.hp),True,(255,255,255))
 
         sprite_list = sprite.spritecollide(player, bonus, True, sprite.collide_mask)
         for colide in sprite_list:
             player.hp += 1
-
+            hp_text = font1.render("Життя:" + str(player.hp),True,(255,255,255))
 
         sprite_list = sprite.spritecollide(player, asteroids, True, sprite.collide_mask)
         for colide in sprite_list:
-            if player.hp < 0:
-            finish = True
+            if player.hp <= 0:
+               finish = True
+            else:
+                player.hp -= 1
+                hp_text = font1.render("Життя:" + str(player.hp),True,(255,255,255))
 
-        collide_list = sprite.groupcollide(bullets, monsters, True, True, sprite.collide_mask)
+        collide_list = sprite.groupcollide(bullets, monsters, True, False, sprite.collide_mask)
         for collide in collide_list:
             points += 1
             points_text = font1.render("Рахунок: " + str(points), True,(255,255,255))
@@ -209,10 +236,14 @@ while run:
             namm = randint(1,3)
             if namm == 1:
                 bonus.add(Bonus ( randint(0, WIDTH -80), randint(-500, -150), randint(3,6)))
-        if points > 10:
-
+        if points >= 5:
+            boss.draw()
+            boss.update()
+            monsters = sprite.Group()
+        if boss.hp <= 0:
             finish = True
             result_text = font2.render("ПРЕМОГА!",True,(230, 145, 12))
+        
     else:
         window.blit(result_text, (300, 250))
         window.blit(restart_text, (300, 350))
